@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from bitstring import BitArray
 
 WINDOW_NAME = 'CD+G'
 
@@ -21,6 +22,25 @@ class Window:
     def update(self,img):
         cv2.imshow(WINDOW_NAME, img)
         self.previous=img
+    def render(self,bytestream):
+        table={
+            1:'Memory Preset',
+            6:'Tile Block',
+            30:'Load Color Table (upper)',
+            31:'Load Color Table (lower)',
+            38:'Tile Block (XOR)'
+        }
+        # every 16 bytes, print
+        pos=0
+        # for y in range(192): # height
+        #     for x in range(288): # width
+        while pos<=len(lines)-48:
+            block=lines[pos:pos+48]
+            cmd = table.get(block[1])
+            if cmd:
+                print(cmd)
+            pos+=48
+
 
 def get(file):
     with open(file,'rb') as f:
@@ -34,11 +54,12 @@ img[10][10] = (255,255,255)
 window.update(img)
 lines = get('test.cdg')
 test = lines[20000:]
-pos=0
-for y in range(192): # height
-    for x in range(288): # width
-        img[y][x]=(0,0,lines[pos])
-        pos+=2
+window.render(lines)
+# pos=0
+# for y in range(192): # height
+#     for x in range(288): # width
+#         img[y][x]=(lines[pos],lines[pos],lines[pos])
+#         pos+=1
 
 window.update(img)
         
