@@ -129,4 +129,5 @@ dmypy.json
 .pyre/
 
 # legal stuff
-test.cdg
+# test.cdg
+*.cdg
