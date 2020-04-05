@@ -5,8 +5,11 @@ class Color:
         self.color=self._convert()
         self.rgb=self._to_rgb()
     def _convert(self):
+        # Isolate lower 4 bits of high
         red = (self.high&63)>>2
-        green = ((self.high&3)<<2)|((self.low>>4)&3)
+        # Combine lower 2 bits of high (MSB) and lower 2 bits of low (LSB)
+        green = ((self.high&3)<<2)|(((self.low&63)>>4)&3)
+        # Isolate lower 4 bits of low
         blue = self.low&15
         return (red,green,blue)
     def _to_rgb(self):
