@@ -9,14 +9,60 @@ class Window:
     def __init__(self,name):
         self.name = name
         self.previous = None
+        self._color_table=[0]*16
+        self._ph=0
+        self._pv=0
+        self._instructions = {
+            packet.MEMORY_PRESET:self._mem_preset,
+            packet.BORDER_PRESET:self._border_preset,
+            packet.TILE_BLOCK:self._tile_block,
+            packet.SCROLL_PRESET:self._scroll_preset,
+            packet.SCROLL_COPY:self._scroll_copy,
+            packet.TRANSPARENT_COLOR:self._def_transparent_color,
+            packet.COLOR_TABLE_LOWER:self._load_color_table,
+            packet.COLOR_TABLE_UPPER:self._load_color_table,
+            packet.TILE_BLOCK_XOR:self._tile_block
+        }
         self._create_window()
+
+    def _mem_preset(self,color,repeat):
+        self.ph=0
+        self.pv=0
+        # TODO: Reset everything
+
+    def _border_preset(self,color):
+        # TODO: Actually make the border lol
+        pass
+
+    def _tile_block(self,color0,color1,row,column,ch,font,xor):
+       pass
+
+    def _scroll_preset(self,color,coph,ph,copv,pv):
+        pass
+
+    def _scroll_copy(self,coph,ph,copv,pv):
+        pass
+
+    def _def_transparent_color(self,table):
+        # TODO: Complete this once rendering is up and running
+        pass
+
+    def _load_color_table(self,table,flag):
+        if flag==0:
+            self._color_table[:6]=table
+        elif flag==1:
+            self._color_table[7:]=table
+
     def resize(self,width,height):
         cv2.resizeWindow(WINDOW_NAME,width,height)
+
     def wait(self):
         cv2.waitKey(0)
+
     def update(self,img):
         cv2.imshow(WINDOW_NAME, img)
         self.previous=img
+
     def _create_window(self):
         # CD-G is 288 pixels across and 192 pixels high
         img = np.ones((192,288,3), np.uint8)
@@ -24,6 +70,7 @@ class Window:
         cv2.namedWindow(WINDOW_NAME,flags=cv2.WINDOW_GUI_NORMAL)
         cv2.resizeWindow(WINDOW_NAME,900,600)
         cv2.imshow(WINDOW_NAME, img)
+
     def render(self,bytestream):
         # every 24 bytes
         jump=24
@@ -33,8 +80,9 @@ class Window:
             if block[0]==packet.PACKET_BEGIN:
                 p = packet.Packet(block)
                 data = p.decode()
-                if data:
-                    print(p.name, data)
+                print(p.name,data)
+                # run=self._instructions.get(p.instruction)
+                # run(*p.decode())
             pos+=jump
 
 
