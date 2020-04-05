@@ -131,3 +131,4 @@ dmypy.json
 # legal stuff
 # test.cdg
 *.cdg
+*.cdg.repair
