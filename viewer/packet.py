@@ -56,10 +56,11 @@ class Packet:
         ch=((self.data[0]&48)>>2)|((self.data[1]&48)>>4)
         color0=self.data[0]&15
         color1=self.data[1]&15
-        row=self.data[2]&31
-        column=self.data[3]&63
-        font=[f'{num:06b}' for num in self.data[4:]]
-        return (color0,color1,row,column,ch,font,xor)
+        col=self.data[2]&31
+        row=self.data[3]&63
+        # font=[f'{num:06b}' for num in self.data[4:]]
+        font=[num for num in self.data[4:]]
+        return (color0,color1,row,col,ch,font,xor)
 
     def _scroll_preset(self):
         color=self.data[0]&15
