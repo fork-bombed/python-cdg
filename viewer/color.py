@@ -3,7 +3,7 @@ class Color:
         self.high=high
         self.low=low
         self.color=self._convert()
-        self.rgb=self._to_rgb()
+        self.bgr=self._to_bgr()
     def _convert(self):
         # Isolate lower 4 bits of high
         red = (self.high&63)>>2
@@ -12,7 +12,7 @@ class Color:
         # Isolate lower 4 bits of low
         blue = self.low&15
         return (red,green,blue)
-    def _to_rgb(self):
+    def _to_bgr(self):
         # Find percentage and use to get value out of 255
-        rgb = [int((color/15)*255) for color in self.color]
-        return tuple(rgb)
+        bgr = [int((color/15)*255) for color in self.color][::-1]
+        return tuple(bgr)
