@@ -30,6 +30,8 @@ class Window:
     def _mem_preset(self,color,repeat):
         self.ph=0
         self.pv=0
+        self.screen=np.zeros((192,288,3), np.uint8)
+        self._update_window()
         # TODO: Reset everything
 
     def _border_preset(self,color):
@@ -64,6 +66,7 @@ class Window:
         cv2.waitKey(0)
 
     def _update_window(self):
+        # TODO: Asyncronous updates
         cv2.imshow(WINDOW_NAME, self.screen)
 
     def _create_window(self):
@@ -94,7 +97,7 @@ class Window:
             block=bytestream[pos:pos+jump]
             if block[0]==packet.PACKET_BEGIN:
                 p = packet.Packet(block)
-                data = p.decode()
+                # data = p.decode()
                 # print(p.name,data)
                 run=self._instructions.get(p.instruction)
                 run(*p.decode())
@@ -111,7 +114,7 @@ window = Window(WINDOW_NAME)
 # img = np.ones((192,288,3), np.uint8)
 # img[10][10] = (255,255,255)
 lines = get('tester.cdg')
-window.render(lines[:60000])
+window.render(lines[:65000])
 # window._paint_block(2,9,[0, 0, 0, 10, 14, 14, 14, 14, 14, 14, 14, 14])
 
 window.wait()

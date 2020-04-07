@@ -13,5 +13,6 @@ class Color:
         blue = self.low&15
         return (red,green,blue)
     def _to_rgb(self):
+        # Find percentage and use to get value out of 255
         rgb = [int((color/15)*255) for color in self.color]
         return tuple(rgb)
