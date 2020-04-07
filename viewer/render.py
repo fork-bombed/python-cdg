@@ -2,7 +2,6 @@ import cv2
 import numpy as np
 from color import Color
 import packet
-from time import sleep
 
 WINDOW_NAME = 'CD+G'
 
@@ -10,7 +9,7 @@ class Window:
     def __init__(self,name):
         self.name = name
         # CD-G is 288 pixels across and 192 pixels high
-        self.screen = np.zeros((192,288,3), np.uint8)
+        self.screen = np.zeros((216,300,3), np.uint8)
         self._color_table=[0]*16
         self._ph=0
         self._pv=0
@@ -30,8 +29,7 @@ class Window:
     def _mem_preset(self,color,repeat):
         self.ph=0
         self.pv=0
-        self.screen=np.zeros((192,288,3), np.uint8)
-        self._update_window()
+        self._empty_screen()
         # TODO: Reset everything
 
     def _border_preset(self,color):
@@ -39,9 +37,10 @@ class Window:
         pass
 
     def _tile_block(self,color0,color1,row,col,ch,font,xor):
-        rgb0=Color(*self._color_table[color0]).rgb[::-1]
-        rgb1=Color(*self._color_table[color1]).rgb[::-1]
-        self._paint_block(rgb0,rgb1,row,col,font,xor)
+        bgr0=Color(*self._color_table[color0]).bgr
+        bgr1=Color(*self._color_table[color1]).bgr
+        self._paint_block(bgr0,bgr1,row,col,font,xor)
+        self._update_window()
 
     def _scroll_preset(self,color,coph,ph,copv,pv):
         pass
@@ -69,25 +68,33 @@ class Window:
         # TODO: Asyncronous updates
         cv2.imshow(WINDOW_NAME, self.screen)
 
+    def _empty_screen(self):
+        self.screen = np.zeros((216,300,3), np.uint8)
+        self._update_window()
+
     def _create_window(self):
         cv2.namedWindow(WINDOW_NAME,flags=cv2.WINDOW_GUI_NORMAL)
-        cv2.resizeWindow(WINDOW_NAME,900,600)
-        cv2.imshow(WINDOW_NAME, self.screen)
+        cv2.resizeWindow(WINDOW_NAME,900,648)
+        self._empty_screen()
 
     def _paint_block(self,color0,color1,row,col,pixels,xor):
-        y=col*12
+        y=(col-1)*12
+        x=(row-1)*6
+        border_x=6
+        border_y=12
+        offset_y=0
         for line in pixels:
-            x=row*6
+            offset_x=0
             for i in range(5,-1,-1):
                 on = (line&((2**(i+1))-1))>>i
-                # if xor:
-                #     screen_color=self.screen[y-12][x-12]
-                #     color1=(color1[0]^screen_color[0],color1[1]^screen_color[1],color1[2]^screen_color[2])
-                #     color0=(color0[0]^screen_color[0],color0[1]^screen_color[1],color0[2]^screen_color[2])
-                self.screen[y-12][x-12]=color1 if on else color0
-                x+=1
-            y+=1
-        self._update_window()
+                if xor:
+                    color=color1 if on else color0
+                    color=tuple([color[i]^self.screen[sum([border_y,offset_y,y])][sum([border_x,offset_x,x])][i] for i in range(3)])
+                    self.screen[sum([border_y,offset_y,y])][sum([border_x,offset_x,x])]=color
+                else:
+                    self.screen[sum([border_y,offset_y,y])][sum([border_x,offset_x,x])]=color1 if on else color0
+                offset_x+=1
+            offset_y+=1
 
     def render(self,bytestream):
         # every 24 bytes
@@ -97,8 +104,6 @@ class Window:
             block=bytestream[pos:pos+jump]
             if block[0]==packet.PACKET_BEGIN:
                 p = packet.Packet(block)
-                # data = p.decode()
-                # print(p.name,data)
                 run=self._instructions.get(p.instruction)
                 run(*p.decode())
             pos+=jump
@@ -111,10 +116,7 @@ def get(file):
 
 window = Window(WINDOW_NAME)
 
-# img = np.ones((192,288,3), np.uint8)
-# img[10][10] = (255,255,255)
-lines = get('tester.cdg')
-window.render(lines[:65000])
-# window._paint_block(2,9,[0, 0, 0, 10, 14, 14, 14, 14, 14, 14, 14, 14])
+lines = get('test.cdg')
+window.render(lines[:65500])
 
 window.wait()
