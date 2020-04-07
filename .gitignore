@@ -129,6 +129,8 @@ dmypy.json
 .pyre/
 
 # legal stuff
-# test.cdg
 *.cdg
 *.cdg.repair
+
+# vscode
+.vscode
